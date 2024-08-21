@@ -1,6 +1,5 @@
 import { SxProps } from "@mui/material";
 import { SchemaViewType, ViewPropsType } from "./types";
-import { g } from "vitest/dist/chunks/suite.CcK46U-P.js";
 
 const CSS_UNIT_PATTERN =
   /(\d+)(cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|%)$/;
@@ -147,3 +146,25 @@ type PaddingSxType = {
   pb?: number;
   pl?: number;
 };
+
+export function parseGap(gap: number | string) {
+  if (typeof gap === "string") {
+    const gapStr = gap.trim().replace("px", "");
+    if (isNaN(gapStr)) {
+      console.warn("Ignored invalid gap value " + gap);
+      return 0;
+    }
+    const gapInt = parseInt(gapStr);
+    return gap.includes("px") ? gapInt / 8 : gapInt;
+  } else if (typeof gap === "number") {
+    return gap;
+  }
+  return 0;
+}
+
+export function getAdjustedLayoutWidth(layoutWidth?: number, gap?: number) {
+  if (typeof gap === "number" && typeof layoutWidth === "number") {
+    return layoutWidth - gap * 8;
+  }
+  return layoutWidth;
+}

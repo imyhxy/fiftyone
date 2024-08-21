@@ -4,7 +4,8 @@ import { HeaderView } from ".";
 import {
   getAdjustedLayoutWidth,
   getComponentProps,
-  getGridSx,
+  getMarginSx,
+  getPaddingSx,
   getPath,
   getProps,
   parseGap,
@@ -13,10 +14,11 @@ import {
 import { ObjectSchemaType, PropertyType, ViewPropsType } from "../utils/types";
 import DynamicIO from "./DynamicIO";
 
-export default function GridView(props: ViewPropsType) {
+export default function FlexView(props: ViewPropsType) {
   const { schema, path, data } = props;
   const { properties, view = {} } = schema as ObjectSchemaType;
   const { alignX, alignY, align_x, align_y, gap = 1, orientation } = view;
+  const direction = orientation === "horizontal" ? "row" : "column";
 
   const propertiesAsArray: PropertyType[] = [];
 
@@ -24,20 +26,22 @@ export default function GridView(props: ViewPropsType) {
     propertiesAsArray.push({ id: property, ...properties[property] });
   }
 
-  const height = props?.layout?.height as number;
+  const layoutHeight = props?.layout?.height;
   const parsedGap = parseGap(gap);
-  const width = getAdjustedLayoutWidth(
+  const adjustedLayoutWidth = getAdjustedLayoutWidth(
     props?.layout?.width,
     parsedGap
-  ) as number;
+  );
 
   const baseGridProps: BoxProps = {
     sx: {
-      display: "grid",
+      display: "flex",
       gap: parsedGap,
       justifyContent: alignX || align_x || "start",
       alignItems: alignY || align_y || "start",
-      ...getGridSx(view),
+      flexDirection: direction,
+      ...getPaddingSx(view),
+      ...getMarginSx(view),
     },
   };
 
@@ -55,9 +59,8 @@ export default function GridView(props: ViewPropsType) {
               alignSelf: alignY || align_y || "unset",
               maxHeight:
                 orientation === "vertical"
-                  ? spaceToHeight(space, height)
+                  ? spaceToHeight(space, layoutHeight)
                   : undefined,
-              width: "100%",
             },
             key: id,
           };
@@ -68,7 +71,7 @@ export default function GridView(props: ViewPropsType) {
                 {
                   ...props,
                   schema: property,
-                  layout: { width, height },
+                  layout: { width: adjustedLayoutWidth, height: layoutHeight },
                 },
                 "item",
                 baseItemProps
